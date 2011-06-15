@@ -72,6 +72,7 @@
     .selected.glow {
       background-color: #d35 !important;
     }
+
 #player { 
   padding: 1em;
   height: 300px;
@@ -203,7 +204,6 @@ clear: none;
 <div id="tracks">
     <? for($i = 'A'; $i <= 'D'; $i++) { ?>
     <section>
-<?= $i?>
       <div class="row" id="<?= $i ?>">
         <? for($j = 1; $j<= 16; $j++) { ?>
           <div id="<?= $j ?>" class="step step<?=$j?>"></div>
