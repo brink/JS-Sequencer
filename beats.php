@@ -154,10 +154,10 @@ clear: none;
         }, false);
       }
       rows = document.getElementsByClassName('row');
-        rows[0].sound_file = 'boom.mp3';
+        rows[0].sound_file = 'tish1.wav';
         rows[1].sound_file = 'tish.mp3';
-        rows[2].sound_file = 'beep.mp3';
-        rows[3].sound_file = 'boop.mp3';
+        rows[2].sound_file = 'tish.ogg';
+        rows[3].sound_file = 'boom1.wav';
       audio.init();
     }
 
@@ -181,7 +181,6 @@ clear: none;
         player = audio.getFreePlayer();
 
         player.src = list[index].parentNode.sound_file;//"boom";
-       console.log(player.src); 
         if (player.currentTime > player.startTime ) {
           player.pause();
           player.currentTime = 0;
