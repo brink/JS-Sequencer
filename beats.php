@@ -92,34 +92,125 @@ clear: none;
   </style>
   <script>
 
-    BeatPlayer = {
-      players: [0,1,2,3,4,5,6,7],
-      current: 0,
-      global_rate: 250, // in ms
+    BeatPlayer = function() {
+      var players = Array(0,1,2,3,4,5,6,7);
+      var trackSlots = 16;
 
-      init: function () {
-        for(var i = 0; i < this.players.length; i++) {
-          this.players[i] = document.createElement('audio');
+      this.init = function() {
+        this.sync = false;
+        this.stepList = document.getElementById('A').getElementsByClassName('step');
+        this.rowList = document.getElementsByClassName('row');
+        this.position = 0;
+        this.currentPlayer = 0;
+        this.bpm = 120;
+        this.setRate(this.bpm);
+
+        for(var i = 0; i < players.length; i++) {
+          players[i] = document.createElement('audio');
         }
-      },
-
-      getFreePlayer: function() {
-        if (++this.current >= this.players.length) {
-          this.current = 0;
+      }
+      this.playCurrentSlot = function() {
+        if (this.sync) {
+          return; 
         }
-        return this.players[this.current];
-      },
+        this.sync = true;
+        var d = new Date();
+        var currentTime = d.getTime();
+        var totalBeats = 0;
 
-      increaseTempo: function() {
-          this.global_rate -= 10;
-      },
-      decreaseTempo: function() {
-          this.global_rate += 10;
+        while (this.prevTime + this.beatLen >= d.getTime()) {
+//          this.prevTime += this.beatLen;
+        } 
+
+        if (!this.position) {
+          console.log('no position');
+        }
+        if (this.stepList[this.position].classList.contains('selected')) {
+          console.log('beat');
+          player = this.getFreePlayer();
+
+          player.src = "boom1.wav";
+          player.play();
+        }
+
+        this.position++;
+
+        if (this.position >= trackSlots) {
+          this.position = 0;
+          console.log('reset');
+        }
+        this.sync = false;
+      }
+      this.getFreePlayer = function() {
+        if (++this.currentPlayer >= players.length) {
+          this.currentPlayer = 0;
+        }
+        return players[this.currentPlayer];
+      }
+      this.setRate = function(rate) {
+        // Rate is in bpm
+        this.beatLen = Math.round(60000 / rate)
+      }
+    }
+
+BeatPlayer.prototype.increaseTempo = function() {
+  this.setRate(this.bpm+1);
+  this.reset();
+}
+BeatPlayer.prototype.decreaseTempo = function() {
+  this.setRate(this.bpm-1);
+  this.reset();
+}
+
+
+BeatPlayer.prototype.reset = function() {
+  var d = new Date();
+  this.prevTime = d.getTime();
+}
+        
+      BeatPlayer.prototype.getBeats = function() {
+        var d = new Date();
+        var currentTime = d.getTime();
+        var totalBeats = 0;
+
+        while (this.prevTime + this.beatLen <= currentTime) {
+          this.prevTime += this.beatLen;
+          totalBeats++;
+        }
+
+        return totalBeats;
       }
 
-    };
 
-    var audio = BeatPlayer;
+      BeatPlayer.prototype.playBySlot = function() {
+        for (var i = 0; i < this.rowList.length; i++) {
+          var row_name = this.rowList[i].id;
+
+          if (this.rowList[index].classList.contains('selected')) {
+            player = audio.getFreePlayer();
+
+            player.src = list[index].parentNode.sound_file;//"boom";
+            if (player.currentTime > player.startTime ) {
+              player.pause();
+              player.currentTime = 0;
+              player.play();
+            } else {
+              player.play();
+            }
+          }
+        }
+      }
+    
+
+
+
+
+//----------------------- 
+    var audio = new BeatPlayer();
+    audio.setRate(135);
+    audio.reset();
+
+
 
     function toggleClass(elem, className, fade) {
       if (elem.classList.contains(className)) {
@@ -134,6 +225,7 @@ clear: none;
       }
     }
     
+    
     function togglePlay() {
       audio.init();
       if (window.playing) {
@@ -142,7 +234,7 @@ clear: none;
         window.playing = false;
       } else {
         runList();
-        window.playing = setInterval(runList,(16 * audio.global_rate));
+//        window.playing = setInterval(runList,(16 * audio.global_rate));
       }
     }
 
