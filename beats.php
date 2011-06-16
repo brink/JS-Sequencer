@@ -96,9 +96,12 @@ clear: none;
     }
 BeatPlayer.prototype.setRate = function(rate) {
   // Rate is in bpm
-  this.beatLen = Math.round(60000 / rate)
+  this.beatLen = Math.round(60000 / rate);
 }
- 
+
+BeatPlayer.prototype.getRate = function() {
+  return Math.round(60000 / this.beatLen);
+} 
 BeatPlayer.prototype.init = function() {
   this.players = Array(1,2,3,4,5,6,7);
   this.trackSlots = 16;
@@ -144,6 +147,14 @@ BeatPlayer.prototype.playCurrentSlot = function() {
     }
   }
   this.pos++;
+}
+
+BeatPlayer.prototype.increaseTempo = function(val) {
+  this.setRate(this.getRate() + val);
+}
+
+BeatPlayer.prototype.decreaseTempo = function(val) {
+  this.setRate(this.getRate() - val);
 }
 
 BeatPlayer.prototype.reset = function() {
@@ -237,8 +248,9 @@ BeatPlayer.prototype.reset = function() {
 <div id ="player">
   <div id="controls">
     <input type="button" onclick="togglePlay();" value="play"/>
-    <input type="button" onclick="audio.increaseTempo();" value="+" />
-    <input type="button" onclick="audio.decreaseTempo();" value="-" />
+    <input type="button" onclick="audio.increaseTempo(5);" value="+" />
+    <input type="button" onclick="audio.decreaseTempo(5);" value="-" /><br/>
+    BPM: <input size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
 </div>
 <div id="tracks">
     <? for($i = 'A'; $i <= 'D'; $i++) { ?>
