@@ -30,11 +30,6 @@
       background-color: orange;
     }
     .step:before {
-      -webkit-transition: all 0.1s linear;
-      -moz-transition: all 0.1s linear;
-      transition: all 0.1s linear;
-      -moz-transform-origin: center;
-      transform-origin: center;
       content: '';
       width: 20px;
       height: 20px;
@@ -60,6 +55,7 @@
     }
     .selected {
       -moz-box-shadow: 0px 0px 15px #efd;
+      -webkit-box-shadow: 0px 0px 15px #efd;
       box-shadow: 0px 0px 15px #efd;
       background-color: #efd !important;
       border: 1px solid #efd !important;
@@ -67,6 +63,8 @@
 
     .glow {
       -moz-box-shadow: 0px 0px 5px #efd;
+      -webkit-box-shadow: 0px 0px 5px #efd;
+      box-shadow: 0px 0px 5px #efd;
       background-color: #aaa !important;
     }
     .selected.glow {
@@ -102,10 +100,14 @@ BeatPlayer.prototype.setRate = function(rate) {
 }
  
 BeatPlayer.prototype.init = function() {
-      this.players = Array(1,2,3,4,5,6,7);
-      this.trackSlots = 16;
-      this.stepList = document.getElementById('A').getElementsByClassName('step');
-  this.sync = false;
+  this.players = Array(1,2,3,4,5,6,7);
+  this.trackSlots = 16;
+  this.rowList = document.getElementsByClassName('row');
+  
+  // Cache the selection for performance
+  for (var i = 0; i < this.rowList.length; i++) {
+    this.rowList[i].stepList = this.rowList[i].getElementsByClassName('step');
+  }
   for(var i = 0; i < this.players.length; i++) {
     this.players[i] = document.createElement('audio');
   }
@@ -119,10 +121,6 @@ BeatPlayer.prototype.getFreePlayer = function() {
 }
 
 BeatPlayer.prototype.playCurrentSlot = function() {
-  /*if (this.sync) {
-    return; 
-  }
-this.sync = true; */
   if (this.pos >= this.trackSlots) {
     this.pos = 0;
   }
@@ -131,27 +129,21 @@ this.sync = true; */
   if ((d.getTime() - this.prevTime) <= this.beatLen ) {
     return;
   } else {
-    toggleClass(this.stepList[this.pos], 'glow',true);
-//    console.log(this.pos);
-//    console.log(this.beatLen);
   }
 
   this.prevTime = d.getTime();
 
- // console.log(this.beatLen);
+  for (var i = 0; i < rows.length; i++) {
+    toggleClass(this.rowList[i].stepList[this.pos], 'glow',this.beatLen-50);
 
-  console.log('beat');
+    if (this.rowList[i].stepList[this.pos] && this.rowList[i].stepList[this.pos].classList.contains('selected')) {
+      player = this.getFreePlayer();
 
-  if (this.stepList[this.pos] && this.stepList[this.pos].classList.contains('selected')) {
-    console.log('beat');
-    player = this.getFreePlayer();
-
-    player.src = "boom1.wav";
-    player.play();
+      player.src = this.rowList[i].sound_file;
+      player.play();
+    }
   }
   this.pos++;
-
-  this.sync = false;
 }
 
 BeatPlayer.prototype.reset = function() {
@@ -163,12 +155,10 @@ BeatPlayer.prototype.reset = function() {
 }
 
 //----------------------- 
-    this.audio = new BeatPlayer();
-    this.audio.setRate(120);
-    this.audio.reset();
 
 
-    function toggleClass(elem, className, fade) {
+  function toggleClass(elem, className, fade) {
+
       if (elem.classList.contains(className)) {
         elem.classList.remove(className);
       } else {
@@ -176,19 +166,19 @@ BeatPlayer.prototype.reset = function() {
         if (fade) {
           setTimeout(function() {
             toggleClass(elem,className);
-          }, 250);
+          }, fade);
         }
       }
     }
 
     function togglePlay() {
-      audio.init();
+      
       if (window.playing) {
         window.clearInterval(window.playing);
-        window.clearTimeout(window.all);
         window.playing = false;
       } else {
-        runList();
+        window.playing =         setInterval("audio.playCurrentSlot()", 50);
+        audio.reset();
 //        window.playing = setInterval(runList,(16 * audio.global_rate));
       }
     }
@@ -205,6 +195,9 @@ BeatPlayer.prototype.reset = function() {
         rows[1].sound_file = 'tish.mp3';
         rows[2].sound_file = 'tish.ogg';
         rows[3].sound_file = 'boom1.wav';
+      this.audio = new BeatPlayer();
+      this.audio.setRate(135);
+      this.audio.reset();
       audio.init();
     }
 
@@ -223,7 +216,7 @@ BeatPlayer.prototype.reset = function() {
 
     function playBeat(index,row) {
       list = document.getElementById(row).getElementsByClassName('step');
-      toggleClass(list[index], "glow",true);
+      toggleClass(list[index], "glow",this.beatLen);
       if (list[index].classList.contains('selected')) {
         player = audio.getFreePlayer();
 
