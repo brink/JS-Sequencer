@@ -93,123 +93,79 @@ clear: none;
   <script>
 
     BeatPlayer = function() {
-      var players = Array(0,1,2,3,4,5,6,7);
-      var trackSlots = 16;
-
-      this.init = function() {
-        this.sync = false;
-        this.stepList = document.getElementById('A').getElementsByClassName('step');
-        this.rowList = document.getElementsByClassName('row');
-        this.position = 0;
-        this.currentPlayer = 0;
-        this.bpm = 120;
-        this.setRate(this.bpm);
-
-        for(var i = 0; i < players.length; i++) {
-          players[i] = document.createElement('audio');
-        }
-      }
-      this.playCurrentSlot = function() {
-        if (this.sync) {
-          return; 
-        }
-        this.sync = true;
-        var d = new Date();
-        var currentTime = d.getTime();
-        var totalBeats = 0;
-
-        while (this.prevTime + this.beatLen >= d.getTime()) {
-//          this.prevTime += this.beatLen;
-        } 
-
-        if (!this.position) {
-          console.log('no position');
-        }
-        if (this.stepList[this.position].classList.contains('selected')) {
-          console.log('beat');
-          player = this.getFreePlayer();
-
-          player.src = "boom1.wav";
-          player.play();
-        }
-
-        this.position++;
-
-        if (this.position >= trackSlots) {
-          this.position = 0;
-          console.log('reset');
-        }
-        this.sync = false;
-      }
-      this.getFreePlayer = function() {
-        if (++this.currentPlayer >= players.length) {
-          this.currentPlayer = 0;
-        }
-        return players[this.currentPlayer];
-      }
-      this.setRate = function(rate) {
-        // Rate is in bpm
-        this.beatLen = Math.round(60000 / rate)
-      }
+      
+      return this;
     }
-
-BeatPlayer.prototype.increaseTempo = function() {
-  this.setRate(this.bpm+1);
-  this.reset();
+BeatPlayer.prototype.setRate = function(rate) {
+  // Rate is in bpm
+  this.beatLen = Math.round(60000 / rate)
 }
-BeatPlayer.prototype.decreaseTempo = function() {
-  this.setRate(this.bpm-1);
-  this.reset();
+ 
+BeatPlayer.prototype.init = function() {
+      this.players = Array(1,2,3,4,5,6,7);
+      this.trackSlots = 16;
+      this.stepList = document.getElementById('A').getElementsByClassName('step');
+  this.sync = false;
+  for(var i = 0; i < this.players.length; i++) {
+    this.players[i] = document.createElement('audio');
+  }
 }
 
+BeatPlayer.prototype.getFreePlayer = function() {
+  if (++this.currentPlayer >= this.players.length) {
+    this.currentPlayer = 0;
+  }
+  return this.players[this.currentPlayer];
+}
+
+BeatPlayer.prototype.playCurrentSlot = function() {
+  /*if (this.sync) {
+    return; 
+  }
+this.sync = true; */
+  if (this.pos >= this.trackSlots) {
+    this.pos = 0;
+  }
+
+  var d = new Date();
+  if ((d.getTime() - this.prevTime) <= this.beatLen ) {
+    return;
+  } else {
+    toggleClass(this.stepList[this.pos], 'glow',true);
+//    console.log(this.pos);
+//    console.log(this.beatLen);
+  }
+
+  this.prevTime = d.getTime();
+
+ // console.log(this.beatLen);
+
+  console.log('beat');
+
+  if (this.stepList[this.pos] && this.stepList[this.pos].classList.contains('selected')) {
+    console.log('beat');
+    player = this.getFreePlayer();
+
+    player.src = "boom1.wav";
+    player.play();
+  }
+  this.pos++;
+
+  this.sync = false;
+}
 
 BeatPlayer.prototype.reset = function() {
   var d = new Date();
   this.prevTime = d.getTime();
+
+  this.pos = 0;
+  this.currentPlayer = 0;
 }
-        
-      BeatPlayer.prototype.getBeats = function() {
-        var d = new Date();
-        var currentTime = d.getTime();
-        var totalBeats = 0;
-
-        while (this.prevTime + this.beatLen <= currentTime) {
-          this.prevTime += this.beatLen;
-          totalBeats++;
-        }
-
-        return totalBeats;
-      }
-
-
-      BeatPlayer.prototype.playBySlot = function() {
-        for (var i = 0; i < this.rowList.length; i++) {
-          var row_name = this.rowList[i].id;
-
-          if (this.rowList[index].classList.contains('selected')) {
-            player = audio.getFreePlayer();
-
-            player.src = list[index].parentNode.sound_file;//"boom";
-            if (player.currentTime > player.startTime ) {
-              player.pause();
-              player.currentTime = 0;
-              player.play();
-            } else {
-              player.play();
-            }
-          }
-        }
-      }
-    
-
-
-
 
 //----------------------- 
-    var audio = new BeatPlayer();
-    audio.setRate(135);
-    audio.reset();
-
+    this.audio = new BeatPlayer();
+    this.audio.setRate(120);
+    this.audio.reset();
 
 
     function toggleClass(elem, className, fade) {
@@ -220,12 +176,11 @@ BeatPlayer.prototype.reset = function() {
         if (fade) {
           setTimeout(function() {
             toggleClass(elem,className);
-          }, audio.global_rate);
+          }, 250);
         }
       }
     }
-    
-    
+
     function togglePlay() {
       audio.init();
       if (window.playing) {
