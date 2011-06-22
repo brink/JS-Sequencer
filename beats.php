@@ -72,10 +72,12 @@
     }
 
 #player { 
-  padding: 1em;
   height: 300px;
+}
+#player,#controls {
+  padding: 1em;
   border-radius: 20px;
-  border: 3px solid #111;
+  border: 3px solid #222;
 }
 #tracks {
   width: 600px;
@@ -83,9 +85,10 @@
 clear: none;
 }
 #controls {
-  margin-top: 35px;
-  margin-right: 35px;
+  margin-top: 8px;
   float: right;
+  text-align: center;
+  width: 100px;
 }
   </style>
   <script>
@@ -190,7 +193,6 @@ BeatPlayer.prototype.reset = function() {
       } else {
         window.playing =         setInterval("audio.playCurrentSlot()", 50);
         audio.reset();
-//        window.playing = setInterval(runList,(16 * audio.global_rate));
       }
     }
 
@@ -212,45 +214,17 @@ BeatPlayer.prototype.reset = function() {
       audio.init();
     }
 
-    function runList() {
-      row_list = document.getElementsByClassName('row');
-      for (var j = 0; j < row_list.length; j++) {
-        var row_name = row_list[j].id;
-        list = document.getElementById(row_name).getElementsByClassName('step');
-  
-        for (var i = 0; i < list.length; i++) {
-          offset = (audio.global_rate * (i+1) - audio.global_rate);
-          setTimeout("playBeat(" + i + ",'" + row_name + "')",offset);
-        }
-      }
-    }
-
-    function playBeat(index,row) {
-      list = document.getElementById(row).getElementsByClassName('step');
-      toggleClass(list[index], "glow",this.beatLen);
-      if (list[index].classList.contains('selected')) {
-        player = audio.getFreePlayer();
-
-        player.src = list[index].parentNode.sound_file;//"boom";
-        if (player.currentTime > player.startTime ) {
-          player.pause();
-          player.currentTime = 0;
-          player.play();
-        } else {
-          player.play();
-        }
-      }
-    }
   </script>
 </head>
   <body onload="init()">
 <section>
 <div id ="player">
   <div id="controls">
-    <input type="button" onclick="togglePlay();" value="play"/>
+    <input type="button" onclick="togglePlay();" value="play"/><br/>
+    <!-- input type="range" name="tempo" min="60" max="260" /><br/ -->
     <input type="button" onclick="audio.increaseTempo(5);" value="+" />
     <input type="button" onclick="audio.decreaseTempo(5);" value="-" /><br/>
-    BPM: <input size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
+    <input id="x-tempo" size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
 </div>
 <div id="tracks">
     <? for($i = 'A'; $i <= 'D'; $i++) { ?>
