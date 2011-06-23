@@ -4,10 +4,11 @@
   <head>
     <title>Beats</title>
   <link rel="stylesheet" media="all" href="reset.css" />
-<!--[if lt IE 8]>
-<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+  <!--[if lt IE 8]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+  <![endif]-->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 
-<![endif]-->
   <style>
     body { background-color: #000;}
     section > div {
@@ -93,32 +94,81 @@ clear: none;
   </style>
   <script>
 
-    BeatPlayer = function() {
+BeatPlayer = function(container) {
+  var container = document.getElementById(container);
+
+  this.getContainer = function() {
+    return container;
+  }
+
+  // metronome subobject
+  this.metronome = new (function() {
       
+      this.setRate = function(rate) {
+        this.beatLen = Math.round(60000 / rate);
+      };
+
+      this.getRate = function() {
+        return this.beatLen;
+      };
+
+      this.reset = function () {
+        var d = new Date();
+        this.prevTime = d.getTime();
+      };
+
+
+      this.reset();
+
       return this;
-    }
+    })();
+  // end metronome subobject
+
+  this.currentPlayer = 0;
+  this.pos = 0;
+
+  return this;
+}
+
 BeatPlayer.prototype.setRate = function(rate) {
   // Rate is in bpm
-  this.beatLen = Math.round(60000 / rate);
+  this.metronome.setRate(rate);
 }
 
 BeatPlayer.prototype.getRate = function() {
-  return Math.round(60000 / this.beatLen);
-} 
+  return this.metronome.getRate();
+}
+
+BeatPlayer.prototype.setTracks = function(trackCount) {
+  this.trackCount = trackCount || 4;
+}
+
+BeatPlayer.prototype.setSlots = function(slotCount) {
+  this.slotCount = slotCount || 16;
+}
+
 BeatPlayer.prototype.init = function() {
-  this.players = Array(1,2,3,4,5,6,7);
-  this.trackSlots = 16;
-  this.rowList = document.getElementsByClassName('row');
-  
-  // Cache the selection for performance
-  for (var i = 0; i < this.rowList.length; i++) {
-    this.rowList[i].stepList = this.rowList[i].getElementsByClassName('step');
-  }
+  this.players = [8];
+  this.setTracks(4);
+  this.setSlots(16);
+  this.buildScore();
+
   for(var i = 0; i < this.players.length; i++) {
     this.players[i] = document.createElement('audio');
   }
 }
+BeatPlayer.prototype.buildScore = function() {
 
+  this.rowList = [];
+  // Cache the selection for performance
+  for (var i = 0; i < this.trackCount; i++) {
+    this.rowList[i] = [];
+
+    for (var j = 0; j < this.slotCount; j++) {
+      this.rowList[i][j] = 0;
+    }
+  }
+}
 BeatPlayer.prototype.getFreePlayer = function() {
   if (++this.currentPlayer >= this.players.length) {
     this.currentPlayer = 0;
@@ -140,9 +190,9 @@ BeatPlayer.prototype.playCurrentSlot = function() {
   this.prevTime = d.getTime();
 
   for (var i = 0; i < rows.length; i++) {
-    toggleClass(this.rowList[i].stepList[this.pos], 'glow',this.beatLen-50);
+    //toggleClass(this.rowList[i][this.pos], 'glow',this.getRate()-50);
 
-    if (this.rowList[i].stepList[this.pos] && this.rowList[i].stepList[this.pos].classList.contains('selected')) {
+    if (this.rowList[i][this.pos]) {
       player = this.getFreePlayer();
 
       player.src = this.rowList[i].sound_file;
@@ -161,13 +211,21 @@ BeatPlayer.prototype.decreaseTempo = function(val) {
 }
 
 BeatPlayer.prototype.reset = function() {
-  var d = new Date();
-  this.prevTime = d.getTime();
+  this.metronome.reset();
 
   this.pos = 0;
   this.currentPlayer = 0;
 }
 
+BeatPlayer.prototype.drawTracks = function() {
+  if (this.trackCount && this.slotCount) {
+    for(var i = 0; i < trackCount; i++) {
+      for (var j = 0; j < slotCount; j++) {
+
+      }
+    }
+  }
+}
 //----------------------- 
 
 
