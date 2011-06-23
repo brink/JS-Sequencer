@@ -148,17 +148,58 @@ BeatPlayer.prototype.setSlots = function(slotCount) {
 }
 
 BeatPlayer.prototype.init = function() {
-  this.players = [8];
-  this.setTracks(4);
-  this.setSlots(16);
+  this.players = Array(8);
+  this.setTracks();
+  this.setSlots();
   this.buildScore();
-
+  this.drawScore();
+  
   for(var i = 0; i < this.players.length; i++) {
     this.players[i] = document.createElement('audio');
   }
+  return this;
 }
-BeatPlayer.prototype.buildScore = function() {
 
+BeatPlayer.prototype.drawScore = function() {
+  var container = this.getContainer();
+
+  if (container != undefined) {
+    var section = document.createElement('section');
+
+    var step = document.createElement('div');
+    step.classList.add('step');
+    step.addEventListener('click', function(elem) { toggleClass(this, "selected"); }, false);
+    
+    step.addEventListener('click', 
+      function(elem) { 
+        toggleClass(event.target, "selected"); 
+      }, 
+      false);
+    var space = document.createElement('div');
+    space.classList.add('step-space');
+
+    var track = document.createElement('div');
+    track.classList.add('row');
+
+    for(var i = 0; i < this.trackCount; i++) {
+      s = document.createElement('section');
+      var t = track.cloneNode(true);
+      
+      for(var j = 1; j <= this.slotCount; j++) {
+        t.appendChild(step.cloneNode(true));
+        if (j % 4 == 0) {
+          t.appendChild(space.cloneNode(true));
+        }
+      }
+      s.appendChild(t);
+      container.appendChild(s);
+    }
+  }
+
+  return this;
+}
+
+BeatPlayer.prototype.buildScore = function() {
   this.rowList = [];
   // Cache the selection for performance
   for (var i = 0; i < this.trackCount; i++) {
@@ -168,7 +209,9 @@ BeatPlayer.prototype.buildScore = function() {
       this.rowList[i][j] = 0;
     }
   }
+  return this;
 }
+
 BeatPlayer.prototype.getFreePlayer = function() {
   if (++this.currentPlayer >= this.players.length) {
     this.currentPlayer = 0;
@@ -190,7 +233,7 @@ BeatPlayer.prototype.playCurrentSlot = function() {
   this.prevTime = d.getTime();
 
   for (var i = 0; i < rows.length; i++) {
-    //toggleClass(this.rowList[i][this.pos], 'glow',this.getRate()-50);
+//    toggleClass(this.rowList[i][this.pos], 'glow',this.getRate()-50);
 
     if (this.rowList[i][this.pos]) {
       player = this.getFreePlayer();
@@ -217,15 +260,6 @@ BeatPlayer.prototype.reset = function() {
   this.currentPlayer = 0;
 }
 
-BeatPlayer.prototype.drawTracks = function() {
-  if (this.trackCount && this.slotCount) {
-    for(var i = 0; i < trackCount; i++) {
-      for (var j = 0; j < slotCount; j++) {
-
-      }
-    }
-  }
-}
 //----------------------- 
 
 
@@ -255,21 +289,19 @@ BeatPlayer.prototype.drawTracks = function() {
     }
 
     function init() {
-      list = document.getElementsByClassName('step');
-      for(var i = 0; i< list.length; i++) {
-        list[i].addEventListener('click', function(elem) {
+      this.audio = new BeatPlayer('tracks');
+      this.audio.setRate(135);
+      this.audio.reset();
+      audio.init();
+      
+      /*  list[i].addEventListener('click', function(elem) {
           toggleClass(this, "selected");
-        }, false);
-      }
+    }, false); */
       rows = document.getElementsByClassName('row');
         rows[0].sound_file = 'tish1.wav';
         rows[1].sound_file = 'tish.mp3';
         rows[2].sound_file = 'tish.ogg';
         rows[3].sound_file = 'boom1.wav';
-      this.audio = new BeatPlayer();
-      this.audio.setRate(135);
-      this.audio.reset();
-      audio.init();
     }
 
   </script>
@@ -283,21 +315,9 @@ BeatPlayer.prototype.drawTracks = function() {
     <input type="button" onclick="audio.increaseTempo(5);" value="+" />
     <input type="button" onclick="audio.decreaseTempo(5);" value="-" /><br/>
     <input id="x-tempo" size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
-</div>
-<div id="tracks">
-    <? for($i = 'A'; $i <= 'D'; $i++) { ?>
-    <section>
-      <div class="row" id="<?= $i ?>">
-        <? for($j = 1; $j<= 16; $j++) { ?>
-          <div id="<?= $j ?>" class="step step<?=$j?>"></div>
-          <? if ($j % 4 == 0) { ?>
-            <div class="step-space"></div>
-          <? } ?>
-        <? } ?>
-      </div>
-    </section>
-    <? } ?>
-</div>
+  </div>
+  <div id="tracks">
+  </div>
 </div>
 </section>
   </body>
