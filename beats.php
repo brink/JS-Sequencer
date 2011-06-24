@@ -200,7 +200,6 @@ BeatPlayer.prototype.drawScore = function(tCount,sCount) {
 
     var step = document.createElement('div');
     step.classList.add('step');
-    step.addEventListener('click', function(elem) { toggleClass(this, "selected"); }, false);
     
     var track = document.createElement('div');
     track.classList.add('row');
@@ -212,6 +211,7 @@ BeatPlayer.prototype.drawScore = function(tCount,sCount) {
       for(var j = 0; j < this.slotCount; j++) {
         var newStep = step.cloneNode(true);
         newStep.classList.add('step' + j);
+        newStep.addEventListener('click', function(elem) { toggleClass(this,'selected');}, false);
         t.appendChild(newStep);
       }
 
@@ -323,9 +323,6 @@ BeatPlayer.prototype.reset = function() {
     function init() {
       this.audio = new BeatPlayer('tracks');
       
-      /*  list[i].addEventListener('click', function(elem) {
-          toggleClass(this, "selected");
-    }, false); */
       rows = document.getElementsByClassName('row');
         rows[0].sound_file = 'tish1.wav';
         rows[1].sound_file = 'tish.mp3';
