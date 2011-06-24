@@ -12,15 +12,13 @@
   <style>
     body { background-color: #000;}
     section > div {
+      width: 600px;
       margin: 0 auto;
-      width: 800px;
       margin-top: 10px;
       clear: both;
+height: 25px;
     }
-    .section div.row {
-      height: 25px;
-    
-    }
+
     .step-space, .step {
       display: block;
       float: left;
@@ -45,6 +43,10 @@
       width: 20px;
       height: 20px;
       z-index: -22;
+    }
+
+    .row .step:nth-child(4n) {
+      margin-right: 20px;
     }
 
     .step {
@@ -73,7 +75,17 @@
     }
 
 #player { 
+  width: 800px;
   height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#tracks {
+  height: 300px;
+  width: 600px;
+  display: block;
+  overflow-x: auto;
 }
 #player,#controls {
   padding: 1em;
@@ -112,6 +124,17 @@ BeatPlayer = function(container) {
         return this.beatLen;
       };
 
+      this.beat = function() {
+        var d = new Date();
+        
+        if ((d.getTime() - this.prevTime) < this.beatLen ) {
+          return false;
+        } else {
+          this.prevTime = d.getTime();
+          return true;
+        }
+      };
+
       this.reset = function () {
         var d = new Date();
         this.prevTime = d.getTime();
@@ -127,6 +150,16 @@ BeatPlayer = function(container) {
   this.currentPlayer = 0;
   this.pos = 0;
 
+  this.players = Array(8);
+  this.setTracks();
+  this.setSlots();
+  this.setRate(135);
+  this.drawScore(4,16);
+  
+  for(var i = 0; i < this.players.length; i++) {
+    this.players[i] = document.createElement('audio');
+  }
+  return this;
   return this;
 }
 
@@ -144,40 +177,31 @@ BeatPlayer.prototype.setTracks = function(trackCount) {
 }
 
 BeatPlayer.prototype.setSlots = function(slotCount) {
+  if (slotCount > 16) {
+    slotCount = 16;
+  }
   this.slotCount = slotCount || 16;
 }
 
-BeatPlayer.prototype.init = function() {
-  this.players = Array(8);
-  this.setTracks();
-  this.setSlots();
+BeatPlayer.prototype.drawScore = function(tCount,sCount) {
+  this.setTracks(tCount);
+  this.setSlots(sCount);
   this.buildScore();
-  this.drawScore();
-  
-  for(var i = 0; i < this.players.length; i++) {
-    this.players[i] = document.createElement('audio');
-  }
-  return this;
-}
 
-BeatPlayer.prototype.drawScore = function() {
   var container = this.getContainer();
 
   if (container != undefined) {
+    if (container.hasChildNodes()) {
+      while(container.childNodes.length >= 1) {
+        container.removeChild(container.firstChild);
+      }
+    }
     var section = document.createElement('section');
 
     var step = document.createElement('div');
     step.classList.add('step');
     step.addEventListener('click', function(elem) { toggleClass(this, "selected"); }, false);
     
-    step.addEventListener('click', 
-      function(elem) { 
-        toggleClass(event.target, "selected"); 
-      }, 
-      false);
-    var space = document.createElement('div');
-    space.classList.add('step-space');
-
     var track = document.createElement('div');
     track.classList.add('row');
 
@@ -185,12 +209,12 @@ BeatPlayer.prototype.drawScore = function() {
       s = document.createElement('section');
       var t = track.cloneNode(true);
       
-      for(var j = 1; j <= this.slotCount; j++) {
-        t.appendChild(step.cloneNode(true));
-        if (j % 4 == 0) {
-          t.appendChild(space.cloneNode(true));
-        }
+      for(var j = 0; j < this.slotCount; j++) {
+        var newStep = step.cloneNode(true);
+        newStep.classList.add('step' + j);
+        t.appendChild(newStep);
       }
+
       s.appendChild(t);
       container.appendChild(s);
     }
@@ -224,16 +248,13 @@ BeatPlayer.prototype.playCurrentSlot = function() {
     this.pos = 0;
   }
 
-  var d = new Date();
-  if ((d.getTime() - this.prevTime) <= this.beatLen ) {
+  //if ((d.getTime() - this.prevTime) <= this.beatLen ) {
+  if (!this.metronome.beat()) {
     return;
-  } else {
   }
 
-  this.prevTime = d.getTime();
-
   for (var i = 0; i < rows.length; i++) {
-//    toggleClass(this.rowList[i][this.pos], 'glow',this.getRate()-50);
+    toggleClass(document.getElementsByClassName('step' + (this.pos)), 'glow',this.getRate()-150);
 
     if (this.rowList[i][this.pos]) {
       player = this.getFreePlayer();
@@ -265,6 +286,11 @@ BeatPlayer.prototype.reset = function() {
 
   function toggleClass(elem, className, fade) {
 
+    if (elem.length > 1) {
+      for(var i = 0; i < elem.length; i++) {
+        toggleClass(elem[i], className, fade);
+      }
+    } else {
       if (elem.classList.contains(className)) {
         elem.classList.remove(className);
       } else {
@@ -276,6 +302,7 @@ BeatPlayer.prototype.reset = function() {
         }
       }
     }
+  }
 
     function togglePlay() {
       
@@ -283,16 +310,18 @@ BeatPlayer.prototype.reset = function() {
         window.clearInterval(window.playing);
         window.playing = false;
       } else {
-        window.playing =         setInterval("audio.playCurrentSlot()", 50);
+
+        window.playing = setInterval(playCurrentSlot, 50);
         audio.reset();
       }
     }
 
+    function playCurrentSlot() {
+      window.audio.playCurrentSlot();
+    }
+
     function init() {
       this.audio = new BeatPlayer('tracks');
-      this.audio.setRate(135);
-      this.audio.reset();
-      audio.init();
       
       /*  list[i].addEventListener('click', function(elem) {
           toggleClass(this, "selected");
