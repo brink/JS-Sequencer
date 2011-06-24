@@ -77,25 +77,21 @@ float: left;
 
 #player { 
   width: 900px;
-  height: 300px;
+  min-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 #tracks {
-z-index: -3;
-  width: 700px;
+  z-index: -3;
   display: block;
+  float: left;
+  clear: none;
 }
-#player,#controls {
+#tracks, #player,#controls {
   padding: 1em;
   border-radius: 20px;
   border: 3px solid #222;
-}
-#tracks {
-  width: 600px;
-  float: left;
-clear: none;
 }
 #controls {
   margin-top: 8px;
@@ -119,7 +115,8 @@ BeatPlayer = function(container,audioFileSelect) {
   }
   // metronome subobject
   this.metronome = new (function() {
-      this.setRate = function(rate) {
+    this.setRate = function(rate) {
+        this.bpm = rate;
         this.beatLen = Math.round(60000 / rate);
       };
 
@@ -142,6 +139,9 @@ BeatPlayer = function(container,audioFileSelect) {
         var d = new Date();
         this.prevTime = d.getTime();
       };
+      this.getBpm = function() {
+        return this.bpm;
+      }
 
       this.reset();
 
@@ -239,15 +239,12 @@ BeatPlayer.prototype.drawScore = function(tCount,sCount) {
 }
 
 BeatPlayer.prototype.toggleValueOn = function(elem, row, i) {
-  elem.addEventListener('click', function(elem) 
-  { 
-    var state = row;
-    if (state[i]) {
-      state[i] = 0;
+  elem.addEventListener('click', function(elem) { 
+    if (row[i]) {
+      row[i] = 0;
     } else {
-      state[i] = 1;
+      row[i] = 1;
     }
-    console.log(state[i]);
   }, false);
 }
 
@@ -286,20 +283,26 @@ BeatPlayer.prototype.playCurrentSlot = function() {
 
     if (this.rowList[i][this.pos]) {
       player = this.getFreePlayer();
-
-      player.src = document.getElementById('sound' + i).value;
+      file = document.getElementById('sound' + i).value;
+      if (player.src != file) {
+        player.src = file;
+      }
       player.play();
     }
   }
   this.pos++;
 }
 
+BeatPlayer.prototype.getBpm = function() {
+  return this.metronome.getBpm();
+}
+
 BeatPlayer.prototype.increaseTempo = function(val) {
-  this.setRate(this.getRate() + val);
+  this.setRate(this.getBpm() + val);
 }
 
 BeatPlayer.prototype.decreaseTempo = function(val) {
-  this.setRate(this.getRate() - val);
+  this.setRate(this.getBpm() - val);
 }
 
 BeatPlayer.prototype.reset = function() {
@@ -339,7 +342,7 @@ BeatPlayer.prototype.reset = function() {
         window.playing = false;
       } else {
 
-        window.playing = setInterval(playCurrentSlot, 50);
+        window.playing = setInterval(playCurrentSlot, 20);
         audio.reset();
       }
     }
