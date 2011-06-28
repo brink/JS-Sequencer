@@ -7,7 +7,6 @@
   <!--[if lt IE 8]>
     <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
   <![endif]-->
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 
   <style>
     body { background-color: #000;}
@@ -48,8 +47,8 @@
       margin-right: 20px;
     }
     div.row select {
-float: left;
-}
+      float: left;
+    }
     .step {
       width: 20px;
       border: 1px solid #333;
@@ -98,6 +97,14 @@ float: left;
   float: right;
   text-align: center;
   width: 100px;
+}
+#controls p {
+  color: #FA5;
+  margin: 10px 0px;
+}
+#controls strong {
+  padding: 0px 3px;
+  border-radius: 10px;
 }
   </style>
   <script>
@@ -353,6 +360,16 @@ BeatPlayer.prototype.reset = function() {
 
     function init() {
       this.audio = new BeatPlayer('tracks','sound_files');
+
+    }
+
+    function redraw() {
+      var beatSel = document.getElementById('beats');
+      var rowSel = document.getElementById('instruments');
+
+      if (beatSel && rowSel) {
+        window.audio.drawScore(rowSel.value, beatSel.value);
+      }
     }
 
   </script>
@@ -361,13 +378,36 @@ BeatPlayer.prototype.reset = function() {
 <section>
 <div id ="player">
   <div id="controls">
+    <p>
     <input type="button" onclick="togglePlay();" value="play"/><br/>
     <!-- input type="range" name="tempo" min="60" max="260" /><br/ -->
+      <input type="button" onclick="audio.increaseTempo(10);" value="+" />
+      <input type="button" onclick="audio.decreaseTempo(10);" value="-" /><br/>
+      <input id="tempo" size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
+      <br/>
+    </p>
 
-    <input type="button" onclick="audio.increaseTempo(10);" value="+" />
-    <input type="button" onclick="audio.decreaseTempo(10);console.log(audio.getRate());" value="-" /><br/>
-    <input id="tempo" size="4" type="text" disabled="true" name="tempo" value="---" style="clear: none;"/>
+    <p>
+      <strong class="selected">Beats</strong>
+      <select id="beats" onchange="redraw()">
+        <option value="4">4</option>
+        <option value="8">8</option>
+        <option value="16" selected="selected">16</option>
+      </select>
+    </p>
 
+    <p>
+    <strong class="selected">Instruments</strong>
+    <select id="instruments" onchange="redraw()">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4" selected="selectd">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+    </p>
     <select id="sound_files">
       <option value="boom1.wav">Boom</option>
       <option value="tish1.wav">Tish</option>
